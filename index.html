@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-TW">
 
 <head>
   <meta charset="UTF-8">
@@ -9,6 +9,7 @@
     
     :root {
       --adjust-size: 0px; 
+      --card-width: 160px;
     }
     
     * {
@@ -33,15 +34,169 @@
       background-image: url("https://images.unsplash.com/photo-1531685250784-7569952593d2?crop=entropy&cs=srgb&fm=jpg&ixid=M3wzMjM4NDZ8MHwxfHJhbmRvbXx8fHx8fHx8fDE2OTMyOTE2OTh8&ixlib=rb-4.0.3&q=100&w=3000");
       background-size: cover;
     }
+
+    /* 設定畫面的 CSS */
+    #setup-panel {
+      position: relative;
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 30px;
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      text-align: center;
+      z-index: 10;
+    }
+
+    #setup-panel h1 {
+      margin-bottom: 20px;
+      color: crimson;
+    }
+
+    .controls-row {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    select, button {
+      padding: 10px 20px;
+      font-size: 16px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      cursor: pointer;
+    }
+
+    button {
+      background-color: crimson;
+      color: white;
+      border: none;
+      font-weight: bold;
+      transition: background 0.2s, transform 0.1s;
+    }
+
+    button:hover {
+      background-color: #a8102d;
+    }
     
+    button:active {
+      transform: scale(0.95);
+    }
+
+    /* 展示畫面的控制按鈕區塊 */
+    #gallery-controls {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 100;
+      background: rgba(255, 255, 255, 0.85);
+      padding: 8px 12px; 
+      border-radius: 6px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      display: none; 
+      align-items: center;
+      gap: 6px; 
+    }
+    
+    /* 針對放大縮小按鈕的特別設定 */
+    #gallery-controls button.zoom-btn {
+      padding: 4px 8px; 
+      font-size: 6px;    
+      line-height: 1;
+      border-radius: 4px;
+    }
+    
+    /* 返回按鈕的設定 (依照需求將字體改為 6px 並調小 padding 以保持比例) */
+    #gallery-controls .btn-back {
+      background-color: #444;
+      font-size: 6px;    /* 修改：返回按鈕字體大小改為 6px */
+      padding: 4px 8px;  /* 修改：調整內邊距讓按鈕外觀與縮放按鈕一致精巧 */
+      line-height: 1;
+      border-radius: 4px;
+      margin-left: 4px;
+    }
+    #gallery-controls .btn-back:hover {
+      background-color: #222;
+    }
+
+    #thumbnail-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 15px;
+      max-height: 50vh;
+      overflow-y: auto;
+      padding: 10px;
+      background: #f9f9f9;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+
+    .thumb-item {
+      cursor: pointer;
+      border-radius: 8px;
+      overflow: hidden;
+      position: relative;
+      background: #fff;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      transition: transform 0.1s;
+    }
+
+    .thumb-item:active {
+      transform: scale(0.95);
+    }
+
+    .thumb-item img {
+      width: 150px;
+      height: 150px;
+      object-fit: cover;
+      display: block;
+      pointer-events: none;
+    }
+
+    .thumb-item p {
+      padding: 8px;
+      font-size: 14px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      background: #eee;
+    }
+
+    .thumb-item.selected {
+      outline: 4px solid crimson;
+      outline-offset: -4px;
+    }
+    
+    .thumb-item.selected::after {
+      content: "✔";
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      background: crimson;
+      color: white;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 14px;
+      font-weight: bold;
+    }
+
+    /* 畫廊的 CSS */
     main {
       position: relative;
-      display: flex;
+      display: none; 
       justify-content: center;
       align-items: center;
       max-width: 100vw;
       min-height: 100vh;
       overflow-x: hidden;
+      padding-top: 60px; 
     }
     
     p {
@@ -65,7 +220,7 @@
       position: relative;
       left: calc(-1 * var(--adjust-size));
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(var(--card-width), 1fr));
       gap: 20px;
       max-width: 100vw;
       padding: 20px;
@@ -73,60 +228,18 @@
       perspective: 0;
     }
     
-    #gallery figure:nth-child(7n) {
-      --duration: 1s;
-      --pin-color: crimson;
-    }
-    
-    #gallery figure:nth-child(7n + 1) {
-      --duration: 1.8s;
-      --pin-color: hotpink;
-    }
-    
-    #gallery figure:nth-child(7n + 2) {
-      --duration: 1.3s;
-      --pin-color: magenta;
-    }
-    
-    #gallery figure:nth-child(7n + 3) {
-      --duration: 1.5s;
-      --pin-color: orangered;
-    }
-    
-    #gallery figure:nth-child(7n + 4) {
-      --duration: 1.1s;
-      --pin-color: darkorchid;
-    }
-    
-    #gallery figure:nth-child(7n + 5) {
-      --duration: 1.6s;
-      --pin-color: deeppink;
-    }
-    
-    #gallery figure:nth-child(7n + 6) {
-      --duration: 1.2s;
-      --pin-color: mediumvioletred;
-    }
-    
-    #gallery figure:nth-child(3n) {
-      --angle: 3deg;
-    }
-    
-    #gallery figure:nth-child(3n + 1) {
-      --angle: -3.3deg;
-    }
-    
-    #gallery figure:nth-child(3n + 2) {
-      --angle: 2.4deg;
-    }
-    
-    #gallery figure:nth-child(odd) {
-      --direction: alternate;
-    }
-    
-    #gallery figure:nth-child(even) {
-      --direction: alternate-reverse;
-    }
+    #gallery figure:nth-child(7n) { --duration: 1s; --pin-color: crimson; }
+    #gallery figure:nth-child(7n + 1) { --duration: 1.8s; --pin-color: hotpink; }
+    #gallery figure:nth-child(7n + 2) { --duration: 1.3s; --pin-color: magenta; }
+    #gallery figure:nth-child(7n + 3) { --duration: 1.5s; --pin-color: orangered; }
+    #gallery figure:nth-child(7n + 4) { --duration: 1.1s; --pin-color: darkorchid; }
+    #gallery figure:nth-child(7n + 5) { --duration: 1.6s; --pin-color: deeppink; }
+    #gallery figure:nth-child(7n + 6) { --duration: 1.2s; --pin-color: mediumvioletred; }
+    #gallery figure:nth-child(3n) { --angle: 3deg; }
+    #gallery figure:nth-child(3n + 1) { --angle: -3.3deg; }
+    #gallery figure:nth-child(3n + 2) { --angle: 2.4deg; }
+    #gallery figure:nth-child(odd) { --direction: alternate; }
+    #gallery figure:nth-child(even) { --direction: alternate-reverse; }
     
     #gallery figure {
       --angle: 3deg;
@@ -157,7 +270,6 @@
       -webkit-backface-visibility: hidden;
       backface-visibility: hidden;
 
-      /* 保持一直搖擺的設定 */
       animation: swing var(--duration) ease-in-out var(--delay) infinite var(--direction);
     }
     
@@ -218,91 +330,214 @@
     }
     
     @keyframes swing {
-      0% {
-        transform: rotate3d(0, 0, 1, calc(-1 * var(--angle)));
-      }
-      100% {
-        transform: rotate3d(0, 0, 1, var(--angle));
-      }
-    }
-    
-    #info {
-      position: relative;
-      text-align: center;
-      z-index: 1;
-    }
-    
-    #info a {
-      font-size: 1.1rem;
-    }
-    
-    @media (min-width: 800px) {
-      #gallery {
-        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      }
+      0% { transform: rotate3d(0, 0, 1, calc(-1 * var(--angle))); }
+      100% { transform: rotate3d(0, 0, 1, var(--angle)); }
     }
   </style>
 </head>
 
 <body>
-  <main>
+  
+  <div id="setup-panel">
+    <h1>相片藝廊設定</h1>
+    <div class="controls-row">
+      <select id="theme-select">
+        <option value="">請選擇主題...</option>
+      </select>
+      <button id="btn-select-all">全選</button>
+      <button id="btn-deselect-all">全不選</button>
+      <button id="btn-start" style="background-color: #2e7d32;">開始展示</button>
+    </div>
+    <div id="thumbnail-container">
+    </div>
+  </div>
+
+  <div id="gallery-controls">
+    <button id="btn-zoom-in" class="zoom-btn" title="放大圖片">＋</button>
+    <button id="btn-zoom-out" class="zoom-btn" title="縮小圖片">－</button>
+    <button id="btn-back" class="btn-back">返回設定</button>
+  </div>
+
+  <main id="main-gallery">
     <div id="gallery">
-      <figure>
-        <div>
-          <div>
-            <h2>畢業了</h2>
-            <p>鵬程萬里</p>
-            <p><br><small>d<br></small></p>
-          </div>
-        </div>
-      </figure>
-      </div>
+    </div>
   </main>
 
-  <footer id='info'> 
   <script>
     "use strict";
-    (function () {
-      window.onload = async () => {
-        const obj = document.querySelector("#gallery");
-        
-        // GitHub API 路徑
-        const repoApiUrl = "https://api.github.com/repos/tpectim/swayingphoto/contents/";
-        
-        try {
-          const response = await fetch(repoApiUrl);
-          if (!response.ok) {
-            throw new Error(`無法連接至 GitHub API，狀態碼: ${response.status}`);
-          }
-          const files = await response.json();
-          
-          // 支援的圖片格式
-          const imageExtensions = /\.(jpg|jpeg|png|gif|webp|svg)$/i;
-          
-          files.forEach(file => {
-            if (file.type === "file" && imageExtensions.test(file.name)) {
-              const figure = document.createElement("figure");
-              
-              const img = document.createElement("img");
-              img.src = file.download_url;
-              img.alt = file.name;
-              img.title = file.name;
-              
-              const figcaption = document.createElement("figcaption");
-              
-              // 【修改重點】使用 .replace(/\.[^/.]+$/, "") 將最後一個點（.）之後的副檔名刪除
-              figcaption.textContent = file.name.replace(/\.[^/.]+$/, ""); 
-              
-              figure.appendChild(img);
-              figure.appendChild(figcaption);
-              obj.appendChild(figure);
-            }
-          });
-        } catch (error) {
-          console.error("自動讀取 GitHub 圖片時發生錯誤:", error);
+
+    let groupedImages = {};
+    let currentCardWidth = 160; 
+    const minWidth = 100;
+    const maxWidth = 400;
+    const stepValue = 20;
+
+    window.onload = async () => {
+      const repoApiUrl = "https://api.github.com/repos/tpectim/swayingphoto/contents/";
+      
+      try {
+        const response = await fetch(repoApiUrl);
+        if (!response.ok) {
+          throw new Error(`無法連接至 GitHub API，狀態碼: ${response.status}`);
         }
-      };
-    })();
+        const files = await response.json();
+        
+        const regex = /^([^_]+)_(.+)\.(jpg|jpeg|png|gif|webp|svg)$/i;
+        
+        files.forEach(file => {
+          if (file.type === "file") {
+            const match = file.name.match(regex);
+            if (match) {
+              const themeCode = match[1]; 
+              const titleText = match[2]; 
+
+              if (!groupedImages[themeCode]) {
+                groupedImages[themeCode] = [];
+              }
+              
+              groupedImages[themeCode].push({
+                url: file.download_url,
+                filename: file.name,
+                title: titleText
+              });
+            }
+          }
+        });
+
+        const themeSelect = document.getElementById("theme-select");
+        const themes = Object.keys(groupedImages).sort();
+        
+        if (themes.length === 0) {
+          themeSelect.innerHTML = "<option value=''>找不到符合命名規則的圖片</option>";
+          return;
+        }
+
+        themes.forEach(theme => {
+          const count = groupedImages[theme].length;
+          const option = document.createElement("option");
+          option.value = theme;
+          option.textContent = `${theme} (共 ${count} 個檔案)`;
+          themeSelect.appendChild(option);
+        });
+
+      } catch (error) {
+        console.error("自動讀取 GitHub 圖片時發生錯誤:", error);
+        alert("讀取圖片失敗，請檢查網路或 API 限制。");
+      }
+    };
+
+    document.getElementById("theme-select").addEventListener("change", function() {
+      const selectedTheme = this.value;
+      const container = document.getElementById("thumbnail-container");
+      container.innerHTML = ""; 
+
+      if (!selectedTheme || !groupedImages[selectedTheme]) return;
+
+      groupedImages[selectedTheme].forEach(imgData => {
+        const thumbDiv = document.createElement("div");
+        thumbDiv.className = "thumb-item selected"; 
+        thumbDiv.dataset.url = imgData.url;
+        thumbDiv.dataset.title = imgData.title;
+
+        const img = document.createElement("img");
+        img.src = imgData.url;
+        img.loading = "lazy";
+
+        const label = document.createElement("p");
+        label.textContent = imgData.title;
+
+        thumbDiv.appendChild(img);
+        thumbDiv.appendChild(label);
+
+        thumbDiv.addEventListener("click", () => {
+          thumbDiv.classList.toggle("selected");
+        });
+
+        container.appendChild(thumbDiv);
+      });
+    });
+
+    document.getElementById("btn-select-all").addEventListener("click", () => {
+      document.querySelectorAll(".thumb-item").forEach(item => {
+        item.classList.add("selected");
+      });
+    });
+
+    document.getElementById("btn-deselect-all").addEventListener("click", () => {
+      document.querySelectorAll(".thumb-item").forEach(item => {
+        item.classList.remove("selected");
+      });
+    });
+
+    document.getElementById("btn-start").addEventListener("click", () => {
+      const selectedItems = document.querySelectorAll(".thumb-item.selected");
+      
+      if (selectedItems.length === 0) {
+        alert("請至少選擇一張圖片來展示！");
+        return;
+      }
+
+      const docElM = document.documentElement;
+      if (docElM.requestFullscreen) {
+        docElM.requestFullscreen();
+      } else if (docElM.webkitRequestFullscreen) { 
+        docElM.webkitRequestFullscreen();
+      } else if (docElM.msRequestFullscreen) { 
+        docElM.msRequestFullscreen();
+      }
+
+      document.getElementById("setup-panel").style.display = "none";
+      document.getElementById("main-gallery").style.display = "flex";
+      document.getElementById("gallery-controls").style.display = "flex";
+
+      const galleryContainer = document.getElementById("gallery");
+      galleryContainer.innerHTML = ""; 
+
+      selectedItems.forEach(item => {
+        const figure = document.createElement("figure");
+        
+        const img = document.createElement("img");
+        img.src = item.dataset.url;
+        
+        const figcaption = document.createElement("figcaption");
+        figcaption.textContent = item.dataset.title; 
+        
+        figure.appendChild(img);
+        figure.appendChild(figcaption);
+        galleryContainer.appendChild(figure);
+      });
+    });
+
+    document.getElementById("btn-zoom-in").addEventListener("click", () => {
+      if (currentCardWidth < maxWidth) {
+        currentCardWidth += stepValue;
+        document.documentElement.style.setProperty('--card-width', currentCardWidth + 'px');
+      }
+    });
+
+    document.getElementById("btn-zoom-out").addEventListener("click", () => {
+      if (currentCardWidth > minWidth) {
+        currentCardWidth -= stepValue;
+        document.documentElement.style.setProperty('--card-width', currentCardWidth + 'px');
+      }
+    });
+
+    document.getElementById("btn-back").addEventListener("click", () => {
+      if (document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement) {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) {
+          document.webkitExitFullscreen();
+        } else if (document.msExitFullscreen) {
+          document.msExitFullscreen();
+        }
+      }
+
+      document.getElementById("gallery-controls").style.display = "none";
+      document.getElementById("main-gallery").style.display = "none";
+      document.getElementById("setup-panel").style.display = "block";
+      document.getElementById("gallery").innerHTML = "";
+    });
   </script>
 </body>
 
